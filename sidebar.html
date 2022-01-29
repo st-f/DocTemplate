@@ -45,8 +45,11 @@
         var varList = [[],[]];
         var tv = document.getElementsByClassName("templatevar");   
         Object.entries(tv).forEach(([key, value]) => {
-          varList[key][0]=value['id'].substr(9);
-          varList[key][1]=value['value'];
+          if(value['value']) {
+            varList[key][0]=value['id'].substr(9);
+            varList[key][1]=value['value'];
+            console.log(varList[key][0] + ' > ' + varList[key][1]);
+          }
         });
         
         $('#error').text('');
