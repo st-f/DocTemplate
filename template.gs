@@ -1,7 +1,7 @@
-/** SlideTemplate
+/** DocTemplate
  */
 
-// [START SlideTemplate]
+// [START DocTemplate]
 /**
  * @OnlyCurrentDoc Limits the script to only accessing the current presentation.
  */
@@ -11,12 +11,12 @@
  * @param {Event} event The open event.
  */
 function onOpen(event) {
-  SlidesApp.getUi().createAddonMenu()
+  DocumentApp.getUi().createAddonMenu()
       .addItem('Open','showSidebar')
       .addItem('Help','showHelp')
       .addToUi();
   //TODO:  call updateVars() script
-  //SlidesApp.getUi().Button.('#run-reload').click(updateVars);
+  //DocumentApp.getUi().Button.('#run-reload').click(updateVars);
 }
 
 /**
@@ -34,48 +34,18 @@ function showSidebar() {
   var ui = HtmlService
       .createHtmlOutputFromFile('sidebar')
       .setTitle('Template');
-  SlidesApp.getUi().showSidebar(ui);
+  DocumentApp.getUi().showSidebar(ui);
 }
 
 /**
  * Opens a dialogbox with help.
  */
 function showHelp() {
-  var ui = SlidesApp.getUi();
+  var ui = DocumentApp.getUi();
   var result = ui.alert(
-    'Provides a way to templatize slides using variables.',
+    'Provides a way to templatize documents using variables.',
     'Variables like ${XXX} are globally replaced.',
     ui.ButtonSet.OK);
-}
-
-/**
- * Recursively gets child text elements a list of elements.
- * @param {PageElement[]} elements The elements to get text from.
- * @return {Text[]} An array of text elements.
- */
-function getElementTexts(elements) {
-  var texts = [];
-  elements.forEach(function(element) {
-    switch (element.getPageElementType()) {
-      case SlidesApp.PageElementType.GROUP:
-        element.asGroup().getChildren().forEach(function(child) {
-          texts = texts.concat(getElementTexts(child));
-        });
-        break;
-      case SlidesApp.PageElementType.TABLE:
-        var table = element.asTable();
-        for (var y = 0; y < table.getNumColumns(); ++y) {
-          for (var x = 0; x < table.getNumRows(); ++x) {
-            texts.push(table.getCell(x, y).getText());
-          }
-        }
-        break;
-      case SlidesApp.PageElementType.SHAPE:
-        texts.push(element.asShape().getText());
-        break;
-    }
-  });
-  return texts;
 }
 
 function findAll(regex, sourceString, aggregator) {
@@ -96,36 +66,34 @@ function removeDups(names) {
 }
 
 function template(varList) {
-  Logger.log('template');
-  Logger.log(varList);
-  var presentation = SlidesApp.getActivePresentation();
+  var document = DocumentApp.getActiveDocument().getBody();
   for (key in varList) {
-    Logger.log(key  + '=' + varList[key]);
-    if (varList[key] !== null) presentation.replaceAllText('${' + key + '}', varList[key], true);
+    console.log(key  + ' => ' + varList[key][0] + ' > ' + varList[key][1]);
+    if (varList[key][1] !== null) {
+      document.replaceText("\\${name}", varList[key][1]);
+    }
   }
 }
 
+function test() {
+  var varList = collectVars();
+  var retList = [[]];
+  for (key in varList) {
+    var test = key
+    retList[key][0] = varList[key]
+    retList[key][1] = "TEST_VAL" + key
+  }
+  template(retList)
+}
+
 function collectVars() {
-  var presentation = SlidesApp.getActivePresentation();
-  var slides = presentation.getSlides();
-  Logger.log("Number of slide" + slides.length);
+  var document = DocumentApp.getActiveDocument();
+  var text = document.getBody().getText()
   var re = /(\${[A-Za-z0-9]+})/;
   var templateVars = [];
-  for (var i = 0; i < slides.length; i++) {
-    var slide = presentation.getSlides()[i];    
-    //this fails if there are images
-    var texts = getElementTexts(slide.getPageElements()).forEach(function(text) {
-        Logger.log(typeof text);
-        //Logger.log(text.getPageElementType());
-        templateVars = templateVars.concat(findAll(re, text.asRenderedString(),templateVars));
-    });
-    Logger.log("Slide " + i);
-    Logger.log(templateVars);
-  }  
+  templateVars = templateVars.concat(findAll(re, text,templateVars));
   var unique = removeDups(templateVars);
-  //or leave in order discovered?
   unique.sort();
-  Logger.log(unique);
   return unique;
 }
-// [END SlideTemplate]
+// [END DocTemplate]
