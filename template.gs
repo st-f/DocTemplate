@@ -1,7 +1,7 @@
-/** DocTemplate
+/** DocsTemplate
  */
 
-// [START DocTemplate]
+// [START DocsTemplate]
 /**
  * @OnlyCurrentDoc Limits the script to only accessing the current presentation.
  */
@@ -68,9 +68,8 @@ function removeDups(names) {
 function template(varList) {
   var document = DocumentApp.getActiveDocument().getBody();
   for (key in varList) {
-    console.log(key  + ' => ' + varList[key][0] + ' > ' + varList[key][1]);
-    if (varList[key][1] !== null) {
-      document.replaceText("\\${name}", varList[key][1]);
+    if (varList[key][1] != null && varList[key][1] != "") {
+      document.replaceText("\\${" + varList[key][0] + "}", varList[key][1]);
     }
   }
 }
@@ -79,7 +78,6 @@ function test() {
   var varList = collectVars();
   var retList = [[]];
   for (key in varList) {
-    var test = key
     retList[key][0] = varList[key]
     retList[key][1] = "TEST_VAL" + key
   }
@@ -96,4 +94,4 @@ function collectVars() {
   unique.sort();
   return unique;
 }
-// [END DocTemplate]
+// [END DocsTemplate]
