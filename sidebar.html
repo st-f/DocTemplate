@@ -42,17 +42,23 @@
       function runTemplate() {
         this.disabled = true;
         //collect variable key/value for each var from html
-        var varList = new Object();
+        var varList = [[],[]];
         var tv = document.getElementsByClassName("templatevar");   
         Object.entries(tv).forEach(([key, value]) => {
-           varList[value['id'].substr(9)]=value['value'];
+          if(value['value']) {
+            varList[key][0]=value['id'].substr(9);
+            varList[key][1]=value['value'];
+            console.log(varList[key][0] + ' > ' + varList[key][1]);
+          }
         });
         
         $('#error').text('');
         google.script.run
             .withSuccessHandler(function(numElements, element) {
               element.disabled = false;
+              console.log(numElements + " replaced, element: " + element)
               if (numElements === 0) {
+                console.log("0 replaced")
                 $('#error').empty()
                     .append('Nothing was done, you sure this is a template?')
                     .append('<br/>');
@@ -61,7 +67,8 @@
              })
             .withFailureHandler(function(msg, element) {
               element.disabled = false;
-              $('#error').text('Something went wrong. Please check the add-on logs.');
+              $('#error').text('Something went wrong. Please check the add-on logs:: ' + msg);
+              console.log('Something went wrong. Please check the add-on logs:: ' + msg);
               return false;
             })
             .withUserObject(this)
@@ -93,7 +100,7 @@
              })
             .withFailureHandler(function(msg, element) {
               element.disabled = false;
-              $('#error').text('Something went wrong. Please check the add-on logs.');
+              $('#error').text('Something went wrong. Please check the add-on logs: ' + msg);
               return false;
             })
             .withUserObject(this)
